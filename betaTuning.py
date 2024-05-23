@@ -76,55 +76,44 @@ class CustomLoss(nn.Module):
         return loss
     
 #Initialization of the model, loss function, optimizer
-model = MyModel()
+
 print('Model created')
-lossFunction = CustomLoss(alpha=1.0, beta=1.0) #initial beta=0.1
+ #initial beta=0.1
 #accuracy 24%
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+
 
 print('Start training')
 #Training loop
 num_epochs=9
-threshold = 1e-6
-for epoch in range(num_epochs):
-    model.train()
-    for data, target in train_dataloader:
-        optimizer.zero_grad()
-        output = model(data)
-        loss = lossFunction(output, target)
-        loss.backward()
-
-        # Gradient-based method
-        # Get gradients of the loss with respect to the model parameters
-        gradients = {}
-        for name, param in model.named_parameters():
-            gradients[name] = param.grad
-
-        # Print or analyze the gradients
-        for name, grad in gradients.items():
-            print(f'Parameter: {name}, Gradient Mean: {grad.mean()}, Gradient Std: {grad.std()}')
-
-        for name, param in model.named_parameters():
-            if gradients[name].abs().mean() <= threshold:  # Adjust threshold as needed
-                param.requires_grad = False
-
-        optimizer.step()
+for i in range(1,11):
+    model = MyModel()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    lossFunction = CustomLoss(alpha=1.0, beta=i/10)
+    print(f'Beta: {i}')
+    for epoch in range(num_epochs):
+        model.train()
+        for data, target in train_dataloader:
+            optimizer.zero_grad()
+            output = model(data)
+            loss = lossFunction(output, target)
+            loss.backward()
+            optimizer.step()
     
-    print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
+        print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
  # Evaluation
-model.eval()
-test_loss = 0
-correct = 0
-with torch.no_grad():
-    for data, target in test_dataloader:
-        output = model(data)
-        test_loss += lossFunction(output, target).item()
-        pred = output.argmax(dim=1, keepdim=True)
-        correct += pred.eq(target.view_as(pred)).sum().item()
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_dataloader:
+            output = model(data)
+            test_loss += lossFunction(output, target).item()
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
 
-test_loss /= len(test_dataloader.dataset)
-accuracy = 100. * correct / len(test_dataloader.dataset)
+    test_loss /= len(test_dataloader.dataset)
+    accuracy = 100. * correct / len(test_dataloader.dataset)
 
-print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} '
-      f'({accuracy:.0f}%)\n')
+    print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} '
+        f'({accuracy:.0f}%)\n')
