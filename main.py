@@ -49,3 +49,18 @@ def custom_loss(true_labels, prediction):
     base_loss = F.cross_entropy(prediction, true_labels)
     return base_loss+penalty
 
+#The training loop
+#Variables
+num_epochs = 9
+batch_size = 500
+X, t = next(iter(train_dataloader))
+X_test, t_test = next(iter(test_dataloader))
+steps_per_epoch = int(X.shape[0]/batch_size)
+train_losses = []
+test_losses = []
+theta = torch.randn(28*28+1)/100
+
+#The loop itself
+for i in tqdm(range(num_epochs)):
+    for j in range(steps_per_epoch):
+        print(f'Epoch {i} Step {j}')
