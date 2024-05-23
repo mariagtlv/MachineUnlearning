@@ -68,6 +68,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 print('Start training')
 #Training loop
 num_epochs=9
+threshold = 1.1e-10
 for epoch in range(num_epochs):
     model.train()
     for data, target in train_dataloader:
@@ -75,11 +76,26 @@ for epoch in range(num_epochs):
         output = model(data)
         loss = lossFunction(output, target)
         loss.backward()
+
+        # Gradient-based method
+        # Get gradients of the loss with respect to the model parameters
+        gradients = {}
+        for name, param in model.named_parameters():
+            gradients[name] = param.grad
+
+        # Print or analyze the gradients
+        for name, grad in gradients.items():
+            print(f'Parameter: {name}, Gradient Mean: {grad.mean()}, Gradient Std: {grad.std()}')
+
+        for name, param in model.named_parameters():
+            if gradients[name].abs().mean() <= threshold:  # Adjust threshold as needed
+                param.requires_grad = False
+
         optimizer.step()
     
     print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
-    # Evaluation
+ # Evaluation
 model.eval()
 test_loss = 0
 correct = 0
@@ -96,4 +112,4 @@ accuracy = 100. * correct / len(test_dataloader.dataset)
 print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} '
       f'({accuracy:.0f}%)\n')
 
-#First accuracy: 79%
+#Decrease in accuray: 78%
