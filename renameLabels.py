@@ -1,13 +1,8 @@
-from typing import Mapping, Union, Optional, Tuple
-
 import numpy as np
-import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import plotly.graph_objects as go
-import torchvision
 
 from torchvision import datasets, transforms
 from tqdm.notebook import tqdm
