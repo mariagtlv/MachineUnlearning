@@ -59,41 +59,62 @@ class MyModel(nn.Module):
         x = self.fc2(x)
         return x
     
+class CustomLoss(nn.Module):
+    def __init__(self, alpha=1.0, beta=1.0):
+        super(CustomLoss, self).__init__()
+        self.alpha = alpha 
+        self.beta = beta 
+
+    def forward(self, output, target):
+        ce_loss = F.cross_entropy(output, target)
+
+        
+        penalty = torch.mean((output[:, 6] - output[:, 3]).clamp(min=0))
+
+        loss = self.alpha * ce_loss + self.beta * penalty
+
+        return loss
+    
 #Initialization of the model, loss function, optimizer
-model = MyModel()
+
 print('Model created')
-lossFunction = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+ #initial beta=0.1
+#accuracy 24%
+
 
 print('Start training')
 #Training loop
-num_epochs=9
-for epoch in range(num_epochs):
-    model.train()
-    for data, target in train_dataloader:
-        optimizer.zero_grad()
-        output = model(data)
-        loss = lossFunction(output, target)
-        loss.backward()
-        optimizer.step()
+num_epochs=4
+for i in range(1,11): #beta must be 7
+    #alpha must be 4 ?
+    model = MyModel()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    lossFunction = CustomLoss(alpha=i/10, beta=0.1)
+    print(f'Beta: {i}')
+    for epoch in range(num_epochs):
+        model.train()
+        for data, target in train_dataloader:
+            optimizer.zero_grad()
+            output = model(data)
+            loss = lossFunction(output, target)
+            loss.backward()
+            optimizer.step()
     
-    print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
+        print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
-    # Evaluation
-model.eval()
-test_loss = 0
-correct = 0
-with torch.no_grad():
-    for data, target in test_dataloader:
-        output = model(data)
-        test_loss += lossFunction(output, target).item()
-        pred = output.argmax(dim=1, keepdim=True)
-        correct += pred.eq(target.view_as(pred)).sum().item()
+ # Evaluation
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_dataloader:
+            output = model(data)
+            test_loss += lossFunction(output, target).item()
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
 
-test_loss /= len(test_dataloader.dataset)
-accuracy = 100. * correct / len(test_dataloader.dataset)
+    test_loss /= len(test_dataloader.dataset)
+    accuracy = 100. * correct / len(test_dataloader.dataset)
 
-print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} '
-      f'({accuracy:.0f}%)\n')
-
-#First accuracy: 80%, average loss: 0.001
+    print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} '
+        f'({accuracy:.0f}%)\n')

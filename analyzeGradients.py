@@ -68,7 +68,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 print('Start training')
 #Training loop
 num_epochs=9
-threshold = 1.1e-10
+threshold = 1.1e-5 #e-6: 77%
 for epoch in range(num_epochs):
     model.train()
     for data, target in train_dataloader:
@@ -84,11 +84,11 @@ for epoch in range(num_epochs):
             gradients[name] = param.grad
 
         # Print or analyze the gradients
-        for name, grad in gradients.items():
-            print(f'Parameter: {name}, Gradient Mean: {grad.mean()}, Gradient Std: {grad.std()}')
+        #for name, grad in gradients.items():
+            #print(f'Parameter: {name}, Gradient Mean: {grad.mean()}, Gradient Std: {grad.std()}')
 
         for name, param in model.named_parameters():
-            if gradients[name].abs().mean() <= threshold:  # Adjust threshold as needed
+            if param.requires_grad == True and gradients[name].abs().mean() <= threshold:  # Adjust threshold as needed
                 param.requires_grad = False
 
         optimizer.step()
