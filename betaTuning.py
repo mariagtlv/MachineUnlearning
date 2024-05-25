@@ -84,8 +84,8 @@ print('Model created')
 
 print('Start training')
 #Training loop
-num_epochs=9
-for i in range(1,11):
+num_epochs=4
+for i in range(5,10): #beta must be 7
     model = MyModel()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     lossFunction = CustomLoss(alpha=1.0, beta=i/10)
