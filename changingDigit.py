@@ -8,15 +8,6 @@ from torchvision import datasets, transforms
 from tqdm.notebook import tqdm
 
 #DATASETS: train and test
-train_dataset = datasets.MNIST(
-    './',
-    train=True,
-    download=True,
-    transform=transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-)
 
 test_dataset = datasets.MNIST('./', train=False,
                     transform=transforms.Compose([
@@ -24,14 +15,14 @@ test_dataset = datasets.MNIST('./', train=False,
                        transforms.Normalize((0.1307,), (0.3081,))
                    ])
                 )
-print('Datasets are built')
 
-#Wrapping the datasets in pytorch DataLoaders
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=len(train_dataset), shuffle=True)
+
+mask_six = test_dataset.targets == 6
+test_dataset.targets[mask_six]=3
+
+
 test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=True)
-print('Dataloaders are complete')
 
-print('creating the model')
 class MyModel(nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
@@ -56,22 +47,11 @@ print('Model created')
 lossFunction = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-print('Start training')
-#Training loop
-num_epochs=15
-for epoch in range(num_epochs):
-    model.train()
-    for data, target in train_dataloader:
-        optimizer.zero_grad()
-        output = model(data)
-        loss = lossFunction(output, target)
-        loss.backward()
-        optimizer.step()
-    
-    print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
-
-    # Evaluation
+model.load_state_dict(torch.load('model/mnist_subset_model.pth'))
 model.eval()
+print('Model loaded from mnist_subset_model.pth')
+
+# Evaluate the model on the test set
 test_loss = 0
 correct = 0
 with torch.no_grad():
@@ -83,10 +63,6 @@ with torch.no_grad():
 
 test_loss /= len(test_dataloader.dataset)
 accuracy = 100. * correct / len(test_dataloader.dataset)
+print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} ({accuracy:.0f}%)\n')
 
-print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} '
-      f'({accuracy:.0f}%)\n')
-
-
-torch.save(model.state_dict(), 'model/mnist_subset_model.pth')
-print('Model saved to mnist_subset_model.pth')
+#accuracy: 79%
