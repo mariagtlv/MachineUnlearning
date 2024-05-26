@@ -6,6 +6,10 @@ import torch.optim as optim
 
 from torchvision import datasets, transforms
 from tqdm.notebook import tqdm
+from sklearn.metrics import confusion_matrix
+
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 #DATASETS: train and test
 
@@ -19,7 +23,8 @@ test_dataset = datasets.MNIST('./', train=False,
 
 mask_six = test_dataset.targets == 6
 test_dataset.targets[mask_six]=3
-
+#After this, all 6 are still predicted as 6, thus decreasing the acurracy (848 items are misclassified)
+#Accuracy after training: 87% now: 79%
 
 test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=True)
 
@@ -51,6 +56,10 @@ model.load_state_dict(torch.load('model/mnist_subset_model.pth'))
 model.eval()
 print('Model loaded from mnist_subset_model.pth')
 
+# Initialize variables for storing targets and predictions
+all_targets = []
+all_predictions = []
+
 # Evaluate the model on the test set
 test_loss = 0
 correct = 0
@@ -60,9 +69,23 @@ with torch.no_grad():
         test_loss += lossFunction(output, target).item()
         pred = output.argmax(dim=1, keepdim=True)
         correct += pred.eq(target.view_as(pred)).sum().item()
+        pred = output.argmax(dim=1)
+        all_targets.extend(target.tolist())
+        all_predictions.extend(pred.tolist())
 
 test_loss /= len(test_dataloader.dataset)
 accuracy = 100. * correct / len(test_dataloader.dataset)
 print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_dataloader.dataset)} ({accuracy:.0f}%)\n')
 
 #accuracy: 79%
+
+# Compute confusion matrix
+conf_matrix = confusion_matrix(all_targets, all_predictions)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=np.arange(10), yticklabels=np.arange(10))
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.title('Confusion Matrix')
+plt.show()
