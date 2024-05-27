@@ -1,5 +1,6 @@
 #Training a model
 
+from unlearning.loss import CustomLoss
 from unlearning.evaluation import ConfusionMatrix
 from unlearning.trainModel import DatasetCreation, MyModel
 import numpy as np
@@ -25,6 +26,23 @@ def train_model(model,loss,optimizer,train_loader,num_epochs=9):
         
         print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
+def train_model_gradients(model,train_dataloader,loss_function,threshold,num_epochs=6):
+    for epoch in range(num_epochs):
+        model.train()
+        for data, target in train_dataloader:
+            optimizer.zero_grad()
+            outputs = model(data)
+            loss = loss_function(outputs, target)
+            loss.backward()
+            
+            for name, param in model.named_parameters():
+                if param.grad is not None and param.requires_grad and param.grad.abs().mean() <= threshold:
+                    param.requires_grad = False
+            
+            optimizer.step()
+        
+        print(f'Epoch {epoch+1}/{6}, Loss: {loss.item()}')
+
 def eval_model(model,test_dataloader):
     model.eval()
     test_loss = 0
@@ -47,6 +65,7 @@ def save_model(model,name):
     print('Model saved to '+name+'.pth')
 
 def eval_model_conf(test_dataloader):
+    model.eval()
     all_targets = []
     all_predictions = []
     test_loss = 0
@@ -81,10 +100,21 @@ eval_model(model,test_loader)
 save_model(model,'unlearningModel')
 
 #Altering the test dataset
-altered_dataset = DatasetCreation.alterDataset(test_data,6,3)
-test_loader=DatasetCreation.wrap_dataset(altered_dataset)
+altered_test_dataset = DatasetCreation.alterDataset(test_data,6,3)
+test_loader=DatasetCreation.wrap_dataset(altered_test_dataset)
 
 model.load_state_dict(torch.load('model/mnist_subset_model.pth'))
 targets, predictions = eval_model_conf(test_loader)
 
 ConfusionMatrix.plot_confusion_matrix(targets,predictions)
+
+#Finetuning the model (altering weights and the loss function)
+
+altered_train_dataset = DatasetCreation.alterDataset(train_data,6,3)
+train_loader = DatasetCreation.wrap_dataset(altered_train_dataset)
+
+new_loss_function = CustomLoss(alpha=1.0, beta=0.1)
+threshold=5e-6
+
+train_model_gradients(model,train_loader,new_loss_function,threshold)
+eval_model_conf(test_loader)
