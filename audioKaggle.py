@@ -90,12 +90,16 @@ model=tf.keras.models.Sequential([
     tf.keras.layers.Dense(10,activation='softmax'),
 ])
 
+
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.000146)
-model.compile(optimizer=optimizer,
-             loss="sparse_categorical_crossentropy",
-              metrics=["accuracy"])
-model.summary()
-model_history=train_model(model=model,epochs=600,optimizer='adam')
+model.compile(optimizer=optimizer, loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+
+def train_model(model, epochs, optimizer):
+    batch_size = 256
+    model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    return model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=epochs, batch_size=batch_size)
+
+model_history = train_model(model=model, epochs=600, optimizer=optimizer)
 
 
 
@@ -113,14 +117,12 @@ predicted_index = np.argmax(prediction, axis = 1)
 print("Expected Index: {}, Predicted Index: {}".format(y_test, predicted_index))
 
 # Plotting the confusion matrix for analizing the true positives and negatives
-import seaborn as sn
+import seaborn as sns
 import matplotlib.pyplot as plt
 pred_x = model.predict(X_test)
 from sklearn.metrics import confusion_matrix
 
 cm = confusion_matrix(y_test,predicted_index )
-
-import seaborn as sns
 
 # Plot confusion matrix as heatmap
 plt.figure(figsize=(8, 6))
@@ -130,5 +132,6 @@ plt.ylabel('True Label')
 plt.title('Confusion Matrix')
 plt.show()
 
-model.save('./model/audio')
+model.save('./model/audio.keras')
+model.save('./model/audio.h5')
 print('model saved as audio')
