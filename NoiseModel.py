@@ -4,7 +4,7 @@ import torch.optim as optim
 from unlearning.evaluation import ConfusionMatrix
 from unlearning.loss import CustomLoss
 from unlearning.model import EvaluationMethods, TrainMethods
-from unlearning.trainModel import DatasetCreation, MyModel
+from unlearning.data import DatasetCreation, MyModel
 
 #Training a model with noise
 train_data,test_data = DatasetCreation.getDatasets()

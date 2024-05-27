@@ -3,7 +3,7 @@
 from unlearning.loss import CustomLoss
 from unlearning.evaluation import ConfusionMatrix
 from unlearning.model import EvaluationMethods, SaveMethods, TrainMethods
-from unlearning.trainModel import DatasetCreation, MyModel
+from unlearning.data import DatasetCreation, MyModel
 import torch
 import torch.nn as nn
 import torch.optim as optim
