@@ -39,10 +39,28 @@ class DatasetCreation():
 
         X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
 
-        return X_train,X_test,y_train,y_test
+        return X,X_train,X_test,y_train,y_test
+    
+    def altered_dataset():
+        df = pd.read_csv("./GTZAN/features_3_sec.csv")
+        df.head()
+
+        # Rename 'Jazz' to 'Pop' in the 'label' column
+        df['label'] = df['label'].replace('jazz', 'pop')
+
+        class_encod=df.iloc[:,-1]
+        converter=LabelEncoder()
+        y=converter.fit_transform(class_encod)
+        df=df.drop(labels="filename",axis=1)
+
+        fit=StandardScaler()
+        X=fit.fit_transform(np.array(df.iloc[:,:-1],dtype=float))
+
+        X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
+        return X,X_train,X_test,y_train,y_test
     
 class MyModel():
-    def get_model():
+    def get_model(X):
         model=tf.keras.models.Sequential([
         tf.keras.layers.Flatten(input_shape=(X.shape[1],)),
         tf.keras.layers.Dropout(0.2),
