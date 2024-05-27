@@ -29,7 +29,6 @@ SaveMethods.save_model(model,'unlearningModel')
 altered_test_dataset = DatasetCreation.alterDataset(test_data,6,3)
 test_loader=DatasetCreation.wrap_dataset(altered_test_dataset)
 
-model.load_state_dict(torch.load('model/mnist_subset_model.pth'))
 targets, predictions = EvaluationMethods.eval_model_conf(test_loader,model,lossFunction)
 
 ConfusionMatrix.plot_confusion_matrix(targets,predictions)

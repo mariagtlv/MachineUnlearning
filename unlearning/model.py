@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 class TrainMethods():
     def train_model(model,loss,optimizer,train_loader,num_epochs=9):
@@ -31,6 +32,25 @@ class TrainMethods():
                 optimizer.step()
             
             print(f'Epoch {epoch+1}/{6}, Loss: {loss.item()}')
+
+    def train_model_noise(model, train_dataloader,optimizer,loss,epsilon,num_epochs=6):
+        for epoch in range(num_epochs):
+            model.train()
+            for data, target in train_dataloader:
+                optimizer.zero_grad()
+                output = model(data)
+                loss = loss(output, target)
+                loss.backward()
+                
+                # Add noise to gradients
+                for param in model.parameters():
+                    if param.grad is not None:
+                        noise = torch.tensor(np.random.laplace(loc=0, scale=1/epsilon, size=param.grad.shape))
+                        param.grad += noise
+                
+                optimizer.step()
+            
+            print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
 class EvaluationMethods():
     def eval_model_conf(test_dataloader,model,loss):
