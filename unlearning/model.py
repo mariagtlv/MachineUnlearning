@@ -41,7 +41,6 @@ class TrainMethods():
                 loss = loss_function(output, target)
                 loss.backward()
                 
-                # Add noise to gradients
                 for param in model.parameters():
                     if param.grad is not None:
                         noise = torch.tensor(np.random.laplace(loc=0, scale=1/epsilon, size=param.grad.shape))

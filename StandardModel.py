@@ -42,4 +42,5 @@ new_loss_function = CustomLoss(alpha=1.0, beta=0.1)
 threshold=5e-6
 
 TrainMethods.train_model_gradients(model,train_loader,new_loss_function,optimizer,threshold)
-EvaluationMethods.eval_model_conf(test_loader,model,lossFunction)
+targets, predictions = EvaluationMethods.eval_model_conf(test_loader,model,lossFunction)
+ConfusionMatrix.plot_confusion_matrix(targets,predictions)

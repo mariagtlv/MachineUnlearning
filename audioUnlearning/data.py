@@ -15,16 +15,7 @@ import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
 class DatasetCreation():
-    # Blues - 0
-    # Classical - 1
-    # Country - 2
-    # Disco - 3
-    # Hip-hop - 4 
-    # Jazz - 5  
-    # Metal - 6 
-    # Pop - 7
-    # Reggae - 8
-    # Rock - 9
+    # Blues - 0, Classical - 1, Country - 2, Disco - 3, Hip-hop - 4, Jazz - 5, Metal - 6, Pop - 7, Reggae - 8, Rock - 9
     def get_dataset():
         df = pd.read_csv("./GTZAN/features_3_sec.csv")
         df.head()
@@ -45,7 +36,6 @@ class DatasetCreation():
         df = pd.read_csv("./GTZAN/features_3_sec.csv")
         df.head()
 
-        # Rename 'Jazz' to 'Pop' in the 'label' column
         df['label'] = df['label'].replace('jazz', 'pop')
 
         class_encod=df.iloc[:,-1]
