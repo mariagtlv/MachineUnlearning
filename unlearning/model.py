@@ -30,15 +30,15 @@ class TrainMethods():
                 
                 optimizer.step()
             
-            print(f'Epoch {epoch+1}/{6}, Loss: {loss.item()}')
+            print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
-    def train_model_noise(model, train_dataloader,optimizer,loss,epsilon,num_epochs=6):
+    def train_model_noise(model, train_dataloader,optimizer,loss_function,epsilon,num_epochs=6):
         for epoch in range(num_epochs):
             model.train()
             for data, target in train_dataloader:
                 optimizer.zero_grad()
                 output = model(data)
-                loss = loss(output, target)
+                loss = loss_function(output, target)
                 loss.backward()
                 
                 # Add noise to gradients
