@@ -6,7 +6,7 @@ import numpy as np
 class TrainMethods():
     def train_model(model,epochs,optimizer,X_train,y_train,X_test,y_test):
         batch_size=256
-        model.compile(optimizer=optimizer,loss='sparse_categorical_crossentropy',metrics='accuracy')
+        model.compile(optimizer=optimizer,loss='sparse_categorical_crossentropy',metrics=['accuracy'])
         return model.fit(X_train,y_train,validation_data=(X_test,y_test),epochs=epochs,batch_size=batch_size)
     
     def add_noise(x, noise_factor=0.05):
