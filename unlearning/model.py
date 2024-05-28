@@ -2,15 +2,14 @@ import torch
 import numpy as np
 
 class TrainMethods():
-    def train_model(model,loss,optimizer,train_loader,num_epochs=9):
+    def train_model(model,loss_function,optimizer,train_loader,num_epochs=9):
 
         for epoch in range(num_epochs):
-            print(num_epochs)
             model.train()
             for data, target in train_loader:
                 optimizer.zero_grad()
                 output = model(data)
-                loss = loss(output, target)
+                loss = loss_function(output, target)
                 loss.backward()
                 optimizer.step()
             
